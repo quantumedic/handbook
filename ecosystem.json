@@ -1,0 +1,8 @@
+{
+	"apps" : [{
+		"name": "quantumedic-handbook",
+		"script": "./bin/www",
+		"watch": true,
+		"exec_interpreter" : "babel-node"
+	}]
+}
