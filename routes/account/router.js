@@ -19,4 +19,12 @@ route.post('/account/register', async (ctx, next) => {
 	}
 })
 
+route.post('/account/login', async (ctx, next) => {
+	ctx.body = {
+		code: '200',
+		msg: 'ok',
+		result: await AccountController.userLogin(ctx.request.body)
+	}
+})
+
 export default route

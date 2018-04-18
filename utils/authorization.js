@@ -1,3 +1,13 @@
+import md5 from 'md5'
+
+const generate = account => {
+	let time = new Date()
+	return {
+		uid: account._id,
+		token: md5(account._id + account.password + time.toString())
+	}
+}
+
 const parse = auth => {
 	let auth_list = auth.split(';')
 	let result = {}
@@ -9,5 +19,6 @@ const parse = auth => {
 }
 
 export default {
-	parse
+	parse,
+	generate
 }
