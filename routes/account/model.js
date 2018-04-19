@@ -18,3 +18,14 @@ export const AccountModel = mongoose.model('account', new Schema({
 	create_time: Date,
 	last_login_time: Date
 }, {collection: 'users'}))
+
+export const USER_BASE_INFO = {
+	uid: '',
+	username: '',
+	gender: '',
+	rank_title: '',
+	type: '',
+	hospital: '',
+	department: '',
+	create_time: ''
+}
