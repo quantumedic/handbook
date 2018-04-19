@@ -30,32 +30,24 @@ const userLogin = async (ctx, next) => {
 	let params = ctx.request.body
 
 	if (params.email && params.password) {
-		let account = await AccountModel.findOne({email: params.email}).exec()
-		console.info(account.password, md5(params.email + params.password))
-		account
-			? account.password === md5(params.email + params.password)
+		try {
+			let account = await AccountModel.findOne({email: params.email}).exec()
+			account.password === md5(params.email + params.password)
 				? handler(ctx, 200, auth.generate(account))
 				: handler(ctx, 30002)
-			: handler(ctx, 30000)
+		} catch (e) {
+			handler(ctx, 30000)
+		}
 	} else {
 		handler(ctx, 201)
 	}
 }
 
 const getUserInfo = async (ctx, next) => {
-	let authorization = ctx.request.header.authorization
-
 	try {
-		let uid = auth.parse(authorization).uid
-		let token = auth.parse(authorization).token
-		if (uid) {
-			let account = await AccountModel.findOne({_id: uid}).exec()
-			auth.validate(account, token)
-				? handler(ctx, 200, account.create_time.toLocaleString())
-				: handler(ctx, 404)
-		} else {
-			handler(ctx, 404)
-		}
+		let uid = await auth.validate(ctx)
+		let account = await AccountModel.findOne({_id: uid}, '-password -__v').exec()
+		handler(ctx, 200, account)
 	} catch (e) {
 		handler(ctx, 404)
 	}
