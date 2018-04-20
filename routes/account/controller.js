@@ -54,8 +54,27 @@ const getUserInfo = async (ctx, next) => {
 	}
 }
 
+const updateUserInfo = async (ctx, next) => {
+	let params = ctx.request.body
+
+	try {
+		let uid = await auth.validate(ctx)
+		let account = await AccountModel.findOne({_id: uid}, '-password -email -documents -collections -create_time -__v').exec()
+		// console.log(account)
+		const update_props = ['gender', 'username', 'department', 'hospital', 'rank_title']
+		update_props.forEach(prop => {
+			account[prop] = params[prop] ? params[prop] : account[prop]
+		})
+		account = await account.save()
+		handler(ctx, 200, tool.serialize(USER_BASE_INFO, account))
+	} catch (e) {
+		handler(ctx, 404)
+	}
+}
+
 export default {
 	createNewUser,
 	userLogin,
-	getUserInfo
+	getUserInfo,
+	updateUserInfo
 }

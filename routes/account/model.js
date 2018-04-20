@@ -26,6 +26,5 @@ export const USER_BASE_INFO = {
 	rank_title: '',
 	type: '',
 	hospital: '',
-	department: '',
-	create_time: ''
+	department: ''
 }

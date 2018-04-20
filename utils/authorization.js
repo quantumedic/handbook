@@ -7,6 +7,7 @@ const validate = ctx => {
 
 	const checkUser = async (resolve, reject, uid, token) => {
 		let account = await AccountModel.findOne({_id: uid}, '_id password last_login_time').exec()
+		// console.info(token, md5(account._id + account.password + account.last_login_time.toLocaleString()))
 		token === md5(account._id + account.password + account.last_login_time.toLocaleString())
 			? resolve(uid)
 			: reject(false)
