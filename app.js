@@ -5,8 +5,10 @@ import onerror from 'koa-onerror'
 import bodyparser from 'koa-bodyparser'
 import logger from 'koa-logger'
 import {routes} from './routes'
+import cors from 'koa2-cors'
 
 const app = new Koa()
+app.use(cors())
 // error handler
 onerror(app)
 
