@@ -3,20 +3,10 @@ import ArticleController from './controller'
 
 let route = router()
 
-route.get('/article', async (ctx, next) => {
-	try {
-		ctx.body = {
-			code: '200',
-			msg: 'ok',
-			result: await ArticleController.getArticleDetail(ctx.request.query)
-		}
-	} catch (err){
-		ctx.body = {
-			code: '201',
-			msg: 'account invalid',
-			result: ''
-		}
-	}
-})
+route.post('/article', ArticleController.createNewArticle)
+
+route.put('/article', ArticleController.updateArticle)
+
+route.get('/article', ArticleController.getArticleDetail)
 
 export default route
