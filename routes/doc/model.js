@@ -1,10 +1,11 @@
 import mongoose from 'mongoose'
+import {autoIncrement} from 'mongoose-plugin-autoinc'
 
 const Schema = mongoose.Schema
 
 mongoose.connect('mongodb://qianchen:kaini19881219@182.254.146.204:27017/manual')
 
-export const ArticleModel = mongoose.model('article', new Schema({
+const DocSchema = new Schema({
 	title: { type: String, default: '' },
 	abstract: { type: String, default: '' },
 	content: { type: String, default: '' },
@@ -15,9 +16,13 @@ export const ArticleModel = mongoose.model('article', new Schema({
 	reference: Array,
 	create_time: Date,
 	update_time: Date
-}, {collection: 'articles'}))
+}, {collection: 'docs'})
 
-export const ARTICLE_BASE_INFO = {
+
+DocSchema.plugin(autoIncrement, {model: 'Document', startAt: 100})
+export const DocModel = mongoose.model('Document', DocSchema)
+
+export const DOC_BASE_INFO = {
 	id: '',
 	title: '',
 	abstract: '',

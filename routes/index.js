@@ -1,7 +1,7 @@
 import account from './account/router'
-import article from './article/router'
+import document from './doc/router'
 
 export const routes = [
 	account,
-	article
+	document
 ]
