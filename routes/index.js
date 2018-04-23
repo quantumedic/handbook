@@ -1,7 +1,14 @@
+import mongoose from 'mongoose'
+
 import account from './account/router'
-import document from './doc/router'
+import doc from './doc/router'
+import tag from './tag/router'
+
+
+mongoose.connect('mongodb://qianchen:kaini19881219@182.254.146.204:27017/manual')
 
 export const routes = [
 	account,
-	document
+	doc,
+	tag
 ]

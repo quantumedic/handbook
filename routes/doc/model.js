@@ -1,19 +1,14 @@
 import mongoose from 'mongoose'
 import {autoIncrement} from 'mongoose-plugin-autoinc'
 
-const Schema = mongoose.Schema
-
-mongoose.connect('mongodb://qianchen:kaini19881219@182.254.146.204:27017/manual')
-
-const DocSchema = new Schema({
+const DocSchema = new mongoose.Schema({
 	title: { type: String, default: '' },
 	abstract: { type: String, default: '' },
 	content: { type: String, default: '' },
 	type: { type: String, default: 'disease' },
 	status: { type: Number, default: 0 },
-	belong: Array,
-	related: Array,
-	reference: Array,
+	tags: [ {type: Number, ref: 'Tag'} ],
+	reference: { type: String, default: '' },
 	create_time: Date,
 	update_time: Date
 }, {collection: 'docs'})
@@ -29,8 +24,7 @@ export const DOC_BASE_INFO = {
 	content: '',
 	type: '',
 	status: '',
-	belong: [],
-	related: [],
+	tags: [],
 	reference: [],
 	create_time: '',
 	update_time: ''

@@ -2,8 +2,6 @@ import mongoose from 'mongoose'
 
 const Schema = mongoose.Schema
 
-mongoose.connect('mongodb://qianchen:kaini19881219@182.254.146.204:27017/manual')
-
 export const AccountModel = mongoose.model('account', new Schema({
 	email: { type: String, required: true },
 	password: { type: String, required: true },
