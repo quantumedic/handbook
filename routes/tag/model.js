@@ -7,6 +7,7 @@ const TagSchema = new mongoose.Schema({
 	description: { type: String, default: '' },
 	parents: [ {type: Number, ref: 'Tag'} ],
 	children: [ {type: Number, ref: 'Tag'} ],
+	level: Number,
 	create_time: Date,
 	update_time: Date
 }, {collection: 'tags'})
@@ -18,6 +19,7 @@ export const TAG_BASE_INFO  = {
 	id: '',
 	name: '',
 	discription: '',
+	level: '',
 	parents: [],
 	children: [],
 	create_time: '',

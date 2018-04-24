@@ -7,4 +7,6 @@ route.post('/tag', TagController.createNewTag)
 
 route.get('/tag', TagController.getTagInfo)
 
+route.get('/tag/list', TagController.getTagList)
+
 export default route

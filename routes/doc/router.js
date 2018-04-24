@@ -9,4 +9,6 @@ route.put('/doc', DocController.updateDoc)
 
 route.get('/doc', DocController.getDocDetail)
 
+route.put('/doc/tag', DocController.modifyDocTag)
+
 export default route

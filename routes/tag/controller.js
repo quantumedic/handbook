@@ -1,7 +1,10 @@
+import moment from 'moment'
 import {TagModel, TAG_BASE_INFO} from './model'
 import {DocModel} from '../doc/model'
 import {handler} from '../../utils/handler'
 import tool from '../../utils/tool'
+
+moment.locale('zh-CN')
 
 const createNewTag = async (ctx, next) => {
 	let params = ctx.request.body
@@ -12,19 +15,18 @@ const createNewTag = async (ctx, next) => {
 			let tag = new TagModel
 			tag.name = params.name
 			tag.root = params.ifRoot
-			tag.parents = params.parents ? params.parents.split(',')  : []
+			tag.parents = [params.parents]
 			tag.description = params.description
 			tag.children = []
 			tag.create_time = time
 			tag.update_time = time
 
-			let _tag = await tag.save()
+			let parent_tag = await TagModel.findOne({_id: params.parents}).exec()
+			parent_tag.children.push(_tag.id)
+			tag.level = parent_tag.level + 1
 
-			_tag.parents.forEach(async id => {
-				let parent_tag = await TagModel.findOne({_id: id}).exec()
-				parent_tag.children.push(_tag.id)
-				await parent_tag.save()
-			})
+			let parent = await parent_tag.save()
+			let _tag = await tag.save()
 
 			handler(ctx, 200, true)
 		} else {
@@ -36,9 +38,17 @@ const createNewTag = async (ctx, next) => {
 	}
 }
 
+const list_tree = (list, tags, direction) => {
+	tags.forEach(tag => {
+		list.push({name: tag.name, id: tag._id})
+		if (tag[direction].length > 0) list_tree(list, tag[direction], direction)
+	})
+}
+
 const getTagInfo = async (ctx, next) => {
 	let id = ctx.request.query.id
 	let need_doc = ctx.request.query.need_doc
+	let need_tree = ctx.request.query.need_tree
 
 	try {
 		let tag = await TagModel.findOne({_id: id})
@@ -46,26 +56,35 @@ const getTagInfo = async (ctx, next) => {
 				path: 'parents',
 				select: 'name _id parents'
 			}})
-			.populate({path: 'children', select: 'name _id'})
+			.populate({path: 'children', select: 'name _id children', populate: {
+				path: 'children',
+				select: 'name _id children'
+			}})
 			.exec()
-
-		let parent_list = []
-		const sequencify = parents => {
-			parents.forEach(parent => {
-				parent_list.push({name: parent.name, id: parent._id})
-				if (parent.parents.length > 0) sequencify(parent.parents)
-			})
-		}
-		sequencify(tag.parents)
 
 		let _tag = tool.serialize(TAG_BASE_INFO, tag)
 		
 		if (need_doc) {
-			let docs = await DocModel.find({}, 'title abstract').where('tags').in([id]).exec()
-			_tag.docs = docs
+			let docs = await DocModel.find({}, 'title abstract update_time')
+				.where('status').equals(1)
+				.where('tags').in([id]).exec()
+			_tag.docs = docs.map(doc => {
+				return {
+					id:doc._id,
+					title: doc.title,
+					abstract: doc.abstract,
+					update_time: moment(doc.update_time).fromNow()
+				}
+			})
 		}
 
-		_tag.parents = parent_list
+		if (!need_tree) {
+			let parent_list = [], children_list = []
+			list_tree(parent_list, tag.parents, 'parents')
+			list_tree(children_list, tag.children, 'children')
+			_tag.parents = parent_list
+			_tag.children = children_list
+		}
 
 		handler(ctx, 200, _tag)
 	} catch (e) {
@@ -74,7 +93,24 @@ const getTagInfo = async (ctx, next) => {
 	}
 }
 
+const getTagList = async (ctx, next) => {
+	let params = ctx.request.query
+
+	try {
+		if (params.ifRoot) {
+			let tags = await TagModel.find({}, 'name _id level').where('root').equals(true).exec()
+			let _tags = tags.map(tag => {
+				return { id: tag.id, name: tag.name, level: tag.level }
+			})
+			handler(ctx, 200, _tags)
+		}
+	} catch (e) {
+		handler(ctx, 50002)
+	}
+}
+
 export default {
 	createNewTag,
-	getTagInfo
+	getTagInfo,
+	getTagList
 }

@@ -21,6 +21,7 @@
     "koa-views": "^5.2.1",
     "koa2-cors": "^2.0.5",
     "md5": "^2.2.1",
+    "moment": "^2.22.1",
     "mongoose": "^5.0.15",
     "mongoose-plugin-autoinc": "^1.1.9",
     "pug": "^2.0.0-rc.1"

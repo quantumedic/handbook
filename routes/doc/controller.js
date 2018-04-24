@@ -6,11 +6,13 @@ import tool from '../../utils/tool'
 const fullfilTagTree = doc => {
 	const trace = tags => {
 		try {
-			tags.forEach(async id => {
-				let tag = await TagModel.findOne({_id: id}, '_id parents').exec()
-				doc.tags = Array.from(new Set(tag.parents.concat(doc.tags)))
-				tag.parents.length > 0
-					? trace(tag.parents)
+			tags.forEach(async tag => {
+				let _tag = await TagModel.findOne({_id: tag}, '_id parents').exec()
+				
+				doc.tags = Array.from(new Set(_tag.parents.concat(doc.tags)))
+				console.info(_tag, doc.tags)
+				_tag.parents.length > 0
+					? trace(_tag.parents)
 					: doc.save()
 			})
 		} catch (e) {
@@ -21,6 +23,14 @@ const fullfilTagTree = doc => {
 	trace(doc.tags)
 }
 
+const mapTagList = doc => {
+	let _doc = tool.serialize(DOC_BASE_INFO, doc)
+	_doc.tags = _doc.tags.map(tag => {
+		return { id: tag._id, name: tag.name, level: tag.level }
+	})
+	return _doc
+}
+
 const createNewDoc = async (ctx, next) => {
 	let tag_id = ctx.request.body.tag_id
 
@@ -28,6 +38,7 @@ const createNewDoc = async (ctx, next) => {
 	let time = new Date().toLocaleString()
 	doc.create_time = time
 	doc.update_time = time
+	doc.draft_time = time
 	doc.tags = [tag_id]
 
 	let _doc = await doc.save()
@@ -43,24 +54,52 @@ const updateDoc = async (ctx, next) => {
 		let doc = await DocModel.findOne({_id: params.id}).exec()
 		doc.title = params.title
 		doc.abstract = params.abstract
-		doc.content = params.content
+		doc.draft = params.content
 		doc.reference = params.reference
-		doc.update_time = time
+		doc.draft_time = time
+
+		if (params.publish) {
+			doc.content = doc.draft
+			doc.update_time = time
+			doc.status = 1
+		}
 
 		let _doc = await doc.save()
-		handler(ctx, 200, tool.serialize(DOC_BASE_INFO, _doc))
+		handler(ctx, 200, mapTagList(_doc))
 	} catch (e) {
 		handler(ctx, 40000)
 	}
 }
 
+const modifyDocTag = async (ctx, next) => {
+	let params = ctx.request.body
+
+	try {
+		let doc = await DocModel.findOne({_id: params.id}).exec()
+		doc.tags = params.ids.split(',')
+
+		let _doc = await doc.save()
+		let _doc_populated = await _doc.populate({path: 'tags', select: '_id name level'}).execPopulate()
+
+		fullfilTagTree(_doc)
+		handler(ctx, 200, mapTagList(_doc_populated))
+	} catch (e) {
+		handler(ctx, 40002)
+	}
+}
+
 const getDocDetail = async (ctx, next) => {
+	console.log(ctx.request.query)
 	try {
 		let doc = await DocModel
-			.findOne({_id: ctx.query.id}, '-related')
-			.populate({path: 'tags', select: '_id name'})
+			.findOne({_id: ctx.request.query.id}, '-related')
+			.populate({path: 'tags', select: '_id name level'})
 			.exec()
-		handler(ctx, 200, tool.serialize(DOC_BASE_INFO, doc))
+
+		let _doc = mapTagList(doc)
+		if (!ctx.request.query.preview) delete _doc.draft
+
+		handler(ctx, 200, _doc)
 	} catch (e) {
 		handler(ctx, 40000)
 	}
@@ -69,5 +108,6 @@ const getDocDetail = async (ctx, next) => {
 export default {
 	createNewDoc,
 	updateDoc,
-	getDocDetail
+	getDocDetail,
+	modifyDocTag
 }
