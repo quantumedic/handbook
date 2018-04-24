@@ -97,14 +97,24 @@ const getTagList = async (ctx, next) => {
 	let params = ctx.request.query
 
 	try {
-		if (params.ifRoot) {
-			let tags = await TagModel.find({}, 'name _id level').where('root').equals(true).exec()
-			let _tags = tags.map(tag => {
-				return { id: tag.id, name: tag.name, level: tag.level }
-			})
-			handler(ctx, 200, _tags)
-		}
+		let tags = params.ids != undefined
+			? await TagModel.find({},  'name _id level').or([
+					{
+						'level': {$lt: params.level + 1},
+						'parents': {$in: params.ids.split(',')}
+					},
+					{'root': true}
+				]).exec()
+
+			: await TagModel.find({level: params.level}, 'name _id level').exec()
+
+		let _tags = tags.map(tag => {
+			return { id: tag.id, name: tag.name, level: tag.level }
+		})
+		handler(ctx, 200, _tags)
+			
 	} catch (e) {
+		console.log(e)
 		handler(ctx, 50002)
 	}
 }
