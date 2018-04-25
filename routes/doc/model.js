@@ -1,8 +1,12 @@
 import mongoose from 'mongoose'
 import {autoIncrement} from 'mongoose-plugin-autoinc'
 
-const DocSchema = new mongoose.Schema({
+const Schema = mongoose.Schema
+
+const DocSchema = new Schema({
 	title: { type: String, default: '' },
+	author: { type: Schema.Types.ObjectId, ref: 'Account' },
+	editors: [ { type: Schema.Types.ObjectId, ref: 'Account' } ],
 	abstract: { type: String, default: '' },
 	content: { type: String, default: '' },
 	draft: { type: String, default:'' },
@@ -12,6 +16,7 @@ const DocSchema = new mongoose.Schema({
 	reference: { type: String, default: '' },
 	create_time: Date,
 	update_time: Date,
+	last_update_author: { type: Schema.Types.ObjectId, ref: 'Account' },
 	draft_time: Date
 }, {collection: 'docs'})
 
@@ -31,5 +36,8 @@ export const DOC_BASE_INFO = {
 	reference: [],
 	create_time: '',
 	update_time: '',
-	draft_time: ''
+	draft_time: '',
+	author: '',
+	editors: [],
+	last_update_author: ''
 }

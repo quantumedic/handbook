@@ -2,7 +2,7 @@ import mongoose from 'mongoose'
 
 const Schema = mongoose.Schema
 
-export const AccountModel = mongoose.model('account', new Schema({
+export const AccountModel = mongoose.model('Account', new Schema({
 	email: { type: String, required: true },
 	password: { type: String, required: true },
 	username: { type: String, required: true },
@@ -27,5 +27,7 @@ export const USER_BASE_INFO = {
 	rank_title: '',
 	type: '',
 	hospital: '',
-	department: ''
+	department: '',
+	phone: '',
+	credential_number: ''
 }

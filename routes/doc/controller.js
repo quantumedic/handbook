@@ -4,6 +4,16 @@ import tool from '../../utils/tool'
 import Account from '../../components/Account'
 import Document from '../../components/Document'
 
+const format = doc => {
+	let _doc = tool.serialize(DOC_BASE_INFO, doc)
+	Document.tagify(_doc)
+	_doc.author = Document.authorify(_doc.author)
+	_doc.editors = _doc.editors.map(editor => {
+		return Document.authorify(editor)
+	})
+	return _doc
+}
+
 const createNewDoc = async (ctx, next) => {
 	let tag_id = ctx.request.body.tag_id
 
@@ -12,11 +22,12 @@ const createNewDoc = async (ctx, next) => {
 
 		if (user.type === 'editor') {
 			let doc = new DocModel
-			Document.init(doc, tag_id)
+			Document.init(doc, tag_id, user.uid)
+
 			let _doc = await doc.save()
 			Document.fullfil(_doc)
 
-			handler(ctx, 200, tool.serialize(DOC_BASE_INFO, _doc))
+			handler(ctx, 200, true)
 		} else {
 			handler(ctx, 203)
 		}
@@ -29,15 +40,37 @@ const updateDoc = async (ctx, next) => {
 	let params = ctx.request.body
 
 	try {
+		let user = await Account.validate(ctx)
 		let doc = await DocModel.findOne({_id: params.id}).exec()
-		Document.update(doc, params)
+		Document.update(doc, params, user.uid)
 
 		let _doc = await doc.save()
-		_doc = await _doc.populate({path: 'tags', select: '_id name level'}).execPopulate()
+		_doc = await _doc
+			.populate({path: 'tags', select: '_id name level'})
+			.populate({path: 'author', select: 'username'})
+			.populate({path: 'editors', select: 'username'})
+			.execPopulate()
 
-		handler(ctx, 200, Document.tagify(tool.serialize(DOC_BASE_INFO, _doc)))
+		handler(ctx, 200, format(_doc))
 	} catch (e) {
-		console.log(e)
+		handler(ctx, 40000)
+	}
+}
+
+const getDocDetail = async (ctx, next) => {
+	try {
+		let doc = await DocModel
+			.findOne({_id: ctx.request.query.id})
+			.populate({path: 'tags', select: '_id name level'})
+			.populate({path: 'author', select: 'username'})
+			.populate({path: 'editors', select: 'username'})
+			.exec()
+
+		let _doc = format(doc)
+		if (!ctx.request.query.preview) delete _doc.draft
+
+		handler(ctx, 200, _doc)
+	} catch (e) {
 		handler(ctx, 40000)
 	}
 }
@@ -56,23 +89,6 @@ const modifyDocTag = async (ctx, next) => {
 		handler(ctx, 200, Document.tagify(tool.serialize(DOC_BASE_INFO, _doc)))
 	} catch (e) {
 		handler(ctx, 40002)
-	}
-}
-
-const getDocDetail = async (ctx, next) => {
-	try {
-		let doc = await DocModel
-			.findOne({_id: ctx.request.query.id})
-			.populate({path: 'tags', select: '_id name level'})
-			.exec()
-
-		let _doc = tool.serialize(DOC_BASE_INFO, doc)
-		Document.tagify(_doc)
-		if (!ctx.request.query.preview) delete _doc.draft
-
-		handler(ctx, 200, _doc)
-	} catch (e) {
-		handler(ctx, 40000)
 	}
 }
 

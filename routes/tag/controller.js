@@ -4,30 +4,26 @@ import {DocModel} from '../doc/model'
 import {handler} from '../../utils/handler'
 import tool from '../../utils/tool'
 import auth from '../../utils/authorization'
+import Tag from '../../components/Tag'
 
 moment.locale('zh-CN')
 
 const createNewTag = async (ctx, next) => {
-	let params = ctx.request.body
-	let tags = await TagModel.find({name: params.name}).exec()
+	let body = ctx.request.body
+	
 	try {
+		let params = tool.check(body, body.parent && body.name, ctx)
+		let tags = await TagModel.find({name: params.name}).exec()
+
 		if (tags.length <= 0) {
-			let time = new Date().toLocaleString()
+			let parent = await TagModel.findOne({_id: params.parent}).exec()
 			let tag = new TagModel
-			tag.name = params.name
-			tag.root = params.ifRoot
-			tag.parents = [params.parents]
-			tag.description = params.description
-			tag.children = []
-			tag.create_time = time
-			tag.update_time = time
 
-			let parent_tag = await TagModel.findOne({_id: params.parents}).exec()
-			parent_tag.children.push(_tag.id)
-			tag.level = parent_tag.level + 1
+			Tag.init(parent, tag, params)
 
-			let parent = await parent_tag.save()
 			let _tag = await tag.save()
+			parent.children.push(_tag.id)
+			await parent.save()
 
 			handler(ctx, 200, true)
 		} else {

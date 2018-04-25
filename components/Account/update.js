@@ -9,9 +9,10 @@ export const init = (user, params) => {
 }
 
 export const update = (source, params) => {
-	const props = ['gender', 'username', 'department', 'hospital', 'rank_title']
+	const props = ['gender', 'username', 'department', 'hospital', 'rank_title', 'phone', 'credential_number']
 	props.forEach(prop => {
 		source[prop] = params[prop] ? params[prop] : source[prop]
 	})
+	if (params.phone && params.credential_number) source.type = 'editor'
 }
 

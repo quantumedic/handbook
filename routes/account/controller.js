@@ -15,7 +15,7 @@ const createNewUser = async (ctx, next) => {
 			const user = new AccountModel
 			Account.init(user, params)
 
-			let account = await _user.save()
+			let account = await user.save()
 			handler(ctx, 200, Account.generate(account))
 		} else {
 			handler(ctx, 30001)

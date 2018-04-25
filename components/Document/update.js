@@ -1,10 +1,12 @@
 import {TagModel} from '../../routes/tag/model'
 
-export const init = (doc, tag_id) => {
+export const init = (doc, tag_id, author) => {
 	let time = new Date().toLocaleString()
 	doc.create_time = time
 	doc.update_time = time
 	doc.draft_time = time
+	doc.author = author
+	doc.editors = [author]
 	doc.tags = [tag_id]
 }
 
@@ -27,7 +29,7 @@ export const fullfil = doc => {
 	trace(doc.tags)
 }
 
-export const update = (source, params) => {
+export const update = (source, params, author) => {
 	let time = new Date().toLocaleString()
 	let props = ['title', 'abstract', 'reference']
 
@@ -36,10 +38,12 @@ export const update = (source, params) => {
 	})
 	source.draft = params.content
 	source.draft_time = time
+	if (source.editors.indexOf(author) < 0) source.editors.push(author)
 
 	if (params.publish) {
 		source.content = source.draft
 		source.update_time = source.draft_time
+		source.last_update_author = author
 		source.status = 1
 	}
 }
