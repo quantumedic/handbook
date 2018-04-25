@@ -1,16 +1,15 @@
-import {AccountModel} from '../routes/account/model'
-import {handler} from './handler'
+import {AccountModel} from '../../routes/account/model'
 import md5 from 'md5'
 
-const validate = ctx => {
+export const validate = ctx => {
 	let authorization = ctx.request.header.authorization
 
 	const checkUser = async (resolve, reject, uid, token) => {
 		try {
-			let account = await AccountModel.findOne({_id: uid}, '_id password last_login_time').exec()
-			// console.info(token, md5(account._id + account.password + account.last_login_time.toLocaleString()))
+			let account = await AccountModel.findOne({_id: uid}, '_id type password last_login_time').exec()
+
 			token === md5(account._id + account.password + account.last_login_time.toLocaleString())
-				? resolve(uid)
+				? resolve({uid: uid, type: account.type})
 				: reject(false)
 		} catch (e) {
 			reject(e)
@@ -28,12 +27,13 @@ const validate = ctx => {
 				reject(false)
 			}
 		} catch (e) {
-			reject(false)
+			console.log(e)
+			reject(e)
 		}
 	})
 }
 
-const generate = account => {
+export const generate = account => {
 	let time = new Date().toLocaleString()
 	account.last_login_time = time
 	account.save()
@@ -43,7 +43,7 @@ const generate = account => {
 	}
 }
 
-const parse = auth => {
+export const parse = auth => {
 	let auth_list = auth.split(';')
 	let result = {}
 	auth_list.forEach(item => {
@@ -51,10 +51,4 @@ const parse = auth => {
 		result[item_props[0]] = item_props[1]
 	})
 	return result
-}
-
-export default {
-	parse,
-	generate,
-	validate
 }

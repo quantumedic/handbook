@@ -3,6 +3,7 @@ import {TagModel, TAG_BASE_INFO} from './model'
 import {DocModel} from '../doc/model'
 import {handler} from '../../utils/handler'
 import tool from '../../utils/tool'
+import auth from '../../utils/authorization'
 
 moment.locale('zh-CN')
 
@@ -119,8 +120,26 @@ const getTagList = async (ctx, next) => {
 	}
 }
 
+const favorTag = async (ctx, next) => {
+	let params = ctx.request.body
+
+	try {
+		let uid = await auth.validate(ctx)
+		let account = await AccountModel.findOne({_id: uid}, '-password -email -documents -collections -__v').exec()
+		account.favor_tags.indexOf(params.id) >= 0
+			? account.favor_tags.splice(account.favor_tags.indexOf(params.id), 1)
+			: account.favor_tags.push(params.id)
+
+		let _account = await account.save()
+		handler(ctx, 200, true)
+	} catch (e) {
+		handler(ctx, 203)
+	}
+}
+
 export default {
 	createNewTag,
 	getTagInfo,
-	getTagList
+	getTagList,
+	favorTag
 }

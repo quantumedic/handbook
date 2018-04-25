@@ -1,3 +1,5 @@
+import {handler} from './handler'
+
 const serialize = (model, item) => {
 	let result = {}
 	for (let prop in model) {
@@ -12,6 +14,18 @@ const serialize = (model, item) => {
 	return result
 }
 
+const check = (params, condition, ctx) => {
+	return new Promise((resolve, reject) => {
+		if (condition) {
+			resolve(params)
+		} else {
+			handler(ctx, 201)
+			reject(condition)
+		}
+	})
+}
+
 export default {
-	serialize
+	serialize,
+	check
 }

@@ -1,53 +1,50 @@
 import {AccountModel, USER_BASE_INFO} from './model'
 import md5 from 'md5'
-import auth from '../../utils/authorization'
 import {handler} from '../../utils/handler'
 import tool from '../../utils/tool'
+import Account from '../../components/Account'
 
 const createNewUser = async (ctx, next) => {
-	let params = ctx.request.body
+	let body = ctx.request.body
 
-	if (params.email && params.password && params.username) {
+	try {
+		let params = await tool.check(body, body.email && body.password && body.username, ctx)
 		let accounts = await AccountModel.find({email: params.email}).exec()
 
 		if (accounts.length <= 0 ) {
 			const user = new AccountModel
-			user.email = params.email
-			user.username = params.username
-			user.password = md5(params.email + params.password)
-			user.create_time = new Date().toLocaleString()
-			user.type = 'reader'
-			let account = await user.save()
-			handler(ctx, 200, auth.generate(account))
+			Account.init(user, params)
+
+			let account = await _user.save()
+			handler(ctx, 200, Account.generate(account))
 		} else {
 			handler(ctx, 30001)
 		}
-	} else {
-		handler(ctx, 201)
+	} catch (e) {
+		console.log(e)
 	}
 }
 
 const userLogin = async (ctx, next) => {
-	let params = ctx.request.body
+	let body = ctx.request.body
 
-	if (params.email && params.password) {
-		try {
-			let account = await AccountModel.findOne({email: params.email}).exec()
-			account.password === md5(params.email + params.password)
-				? handler(ctx, 200, auth.generate(account))
-				: handler(ctx, 30002)
-		} catch (e) {
-			handler(ctx, 30000)
-		}
-	} else {
-		handler(ctx, 201)
+	try {
+		let params = await tool.check(body, body.email && body.password, ctx)
+		let account = await AccountModel.findOne({email: params.email}).exec()
+
+		account.password === md5(params.email + params.password)
+			? handler(ctx, 200, Account.generate(account))
+			: handler(ctx, 30002)
+	} catch (e) {
+		handler(ctx, 30000)
 	}
 }
 
 const getUserInfo = async (ctx, next) => {
 	try {
-		let uid = await auth.validate(ctx)
-		let account = await AccountModel.findOne({_id: uid}, '-password -email -documents -collections -__v').exec()
+		let user = await Account.validate(ctx)
+		let account = await AccountModel.findOne({_id: user.uid}).exec()
+		
 		handler(ctx, 200, tool.serialize(USER_BASE_INFO, account))
 	} catch (e) {
 		handler(ctx, 404)
@@ -58,14 +55,13 @@ const updateUserInfo = async (ctx, next) => {
 	let params = ctx.request.body
 
 	try {
-		let uid = await auth.validate(ctx)
-		let account = await AccountModel.findOne({_id: uid}, '-password -email -documents -collections -create_time -__v').exec()
-		// console.log(account)
-		const update_props = ['gender', 'username', 'department', 'hospital', 'rank_title']
-		update_props.forEach(prop => {
-			account[prop] = params[prop] ? params[prop] : account[prop]
-		})
+		let user = await Account.validate(ctx)
+		let account = await AccountModel.findOne({_id: user.uid}).exec()
+		
+
+		Account.update(account, params)
 		account = await account.save()
+
 		handler(ctx, 200, tool.serialize(USER_BASE_INFO, account))
 	} catch (e) {
 		handler(ctx, 404)
