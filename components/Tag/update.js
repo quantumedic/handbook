@@ -1,6 +1,6 @@
 import {TagModel} from '../../routes/tag/model'
 
-export const init = async (parent, tag, params) => {
+export const init = (parent, tag, params) => {
 	let time = new Date().toLocaleString()
 
 	tag.name = params.name

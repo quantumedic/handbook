@@ -18,7 +18,7 @@ export const TagModel = mongoose.model('Tag', TagSchema)
 export const TAG_BASE_INFO  = {
 	id: '',
 	name: '',
-	discription: '',
+	description: '',
 	level: '',
 	parents: [],
 	children: [],

@@ -8,6 +8,7 @@ const format = doc => {
 	let _doc = tool.serialize(DOC_BASE_INFO, doc)
 	Document.tagify(_doc)
 	_doc.author = Document.authorify(_doc.author)
+	_doc.last_update_author = Document.authorify(_doc.last_update_author)
 	_doc.editors = _doc.editors.map(editor => {
 		return Document.authorify(editor)
 	})
@@ -49,6 +50,7 @@ const updateDoc = async (ctx, next) => {
 			.populate({path: 'tags', select: '_id name level'})
 			.populate({path: 'author', select: 'username'})
 			.populate({path: 'editors', select: 'username'})
+			.populate({path: 'last_update_author', select: 'username'})
 			.execPopulate()
 
 		handler(ctx, 200, format(_doc))
@@ -64,6 +66,7 @@ const getDocDetail = async (ctx, next) => {
 			.populate({path: 'tags', select: '_id name level'})
 			.populate({path: 'author', select: 'username'})
 			.populate({path: 'editors', select: 'username'})
+			.populate({path: 'last_update_author', select: 'username'})
 			.exec()
 
 		let _doc = format(doc)

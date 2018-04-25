@@ -12,7 +12,7 @@ const createNewTag = async (ctx, next) => {
 	let body = ctx.request.body
 	
 	try {
-		let params = tool.check(body, body.parent && body.name, ctx)
+		let params = await tool.check(body, body.parent && body.name, ctx)
 		let tags = await TagModel.find({name: params.name}).exec()
 
 		if (tags.length <= 0) {
