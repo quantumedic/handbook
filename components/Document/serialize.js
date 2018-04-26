@@ -10,8 +10,8 @@ export const tagify = doc => {
 }
 
 export const authorify = author => {
-	return {
+	return author ? {
 		id: author._id,
 		username: author.username
-	}
+	} : {}
 }

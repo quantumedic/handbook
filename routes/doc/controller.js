@@ -74,6 +74,7 @@ const getDocDetail = async (ctx, next) => {
 
 		handler(ctx, 200, _doc)
 	} catch (e) {
+		console.log(e)
 		handler(ctx, 40000)
 	}
 }
