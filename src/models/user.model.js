@@ -2,10 +2,11 @@ import mongoose from 'mongoose'
 
 const Schema = mongoose.Schema
 
-export const AccountModel = mongoose.model('Account', new Schema({
+export const User = mongoose.model('User', new Schema({
 	email: { type: String, required: true },
 	password: { type: String, required: true },
 	username: { type: String, required: true },
+	realname: { type: String, default: '' },
 	phone: { type: String, default: '' },
 	credential_number: { type: String, default: '' },
 	gender: { type: String, default: ''},
@@ -20,14 +21,16 @@ export const AccountModel = mongoose.model('Account', new Schema({
 	last_login_time: Date
 }, {collection: 'users'}))
 
-export const USER_BASE_INFO = {
-	uid: '',
-	username: '',
-	gender: '',
-	rank_title: '',
-	type: '',
-	hospital: '',
-	department: '',
-	phone: '',
-	credential_number: ''
-}
+export const FORMAT_USER = [
+	'username',
+	'realname',
+	'type',
+	'gender',
+	'email',
+	'phone',
+	'rank_title',
+	'department',
+	'hospital',
+	'credential_number',
+	'create_time'
+]

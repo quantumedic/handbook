@@ -4,8 +4,10 @@ import json from 'koa-json'
 import onerror from 'koa-onerror'
 import bodyparser from 'koa-bodyparser'
 import logger from 'koa-logger'
-import {routes} from './routes'
+import {routes} from './src/routes'
 import cors from 'koa2-cors'
+
+import auth from './src/middlewares/auth'
 
 const app = new Koa()
 app.use(cors())
@@ -18,6 +20,7 @@ app.use(bodyparser({
 }))
 app.use(json())
 app.use(logger())
+app.use(auth.authenticate)
 
 // logger
 app.use(async (ctx, next) => {

@@ -4,24 +4,20 @@ import {autoIncrement} from 'mongoose-plugin-autoinc'
 const TagSchema = new mongoose.Schema({
 	name: { type: String, required: true },
 	root: { type: Boolean, default: false },
-	description: { type: String, default: '' },
+	description: { type: String, default: true },
 	parents: [ {type: Number, ref: 'Tag'} ],
 	children: [ {type: Number, ref: 'Tag'} ],
 	level: Number,
 	create_time: Date,
-	update_time: Date
+	update_time: Date,
+	favor_count: { type: Number, default: 0 }
 }, {collection: 'tags'})
 
 TagSchema.plugin(autoIncrement, {model: 'Tag', startAt: 1})
-export const TagModel = mongoose.model('Tag', TagSchema)
+export const Tag = mongoose.model('Tag', TagSchema)
 
-export const TAG_BASE_INFO  = {
-	id: '',
-	name: '',
-	description: '',
-	level: '',
-	parents: [],
-	children: [],
-	create_time: '',
-	update_time: ''
-}
+export const FORMAT_TAG = [
+	'name',
+	'description',
+	'level'
+]
