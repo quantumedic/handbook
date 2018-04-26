@@ -28,7 +28,7 @@ const createNewDoc = async (ctx, next) => {
 			let _doc = await doc.save()
 			Document.fullfil(_doc)
 
-			handler(ctx, 200, true)
+			handler(ctx, 200, _doc._id)
 		} else {
 			handler(ctx, 203)
 		}
