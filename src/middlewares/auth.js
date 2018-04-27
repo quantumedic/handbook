@@ -25,6 +25,7 @@ const authenticate = async (ctx, next) => {
 	try {
 		let user = authorization ? parse(authorization) : {}
 		ctx.state.user = user
+		console.info(method, path)
 		
 		// authenticate token
 		if (permission.check(method, path)) {

@@ -14,24 +14,15 @@ const create = async (ctx, next) => {
 			let time = new Date().toLocaleString()
 
 			tag.name = params.name
-			tag.root = params.ifRoot
 			tag.description = params.description
 			tag.parents = []
-			tag.children = []
 			tag.create_time = time
 			tag.update_time = time
-			tag.level = 1
+
+			let parent = await Tag.findById(params.parent).exec()
+			if (parent) tag.parents.push(parent._id)
+			tag.level = parent ? parent.level + 1 : 0
 			let _tag = await tag.save()
-
-			if (!tag.root) {
-				let parent = await Tag.findById(params.parent).exec()
-				tag.parents.push(parent._id)
-				parent.children.push(_tag._id)
-				tag.level = parent.level + 1
-				await tag.save()
-				await parent.save()
-			}
-
 
 			handler(ctx, 200, format.copy(_tag, FORMAT_TAG))
 		} else {
@@ -49,27 +40,22 @@ const getInfo = async (ctx, next) => {
 
 	try {
 		let tag = await Tag.findById(id)
-			.populate({path: 'parents', select: 'name parents', populate: {
-				path: 'parents',
-				select: 'name parents'
-			}})
-			.populate({path: 'children', select: 'name children', populate: {
-				path: 'children',
-				select: 'name children'
-			}})
+			.populate({path: 'parents', select: 'name level'})
 			.exec()
 
-		let _tag = format.copy(tag, FORMAT_TAG)
-		_tag.children = format.tree(tag.children, 'children')
-		_tag.parents = format.tree(tag.parents, 'parents')
+		let children = await Tag.find({'parents': {$in: [tag._id]}}, 'name level').exec()
 
-		if (!tree) {
-			_tag.children = format.flatten(_tag.children, 'children')
-			_tag.parents = format.flatten(_tag.parents, 'parents')
-		}
+		let _tag = format.copy(tag, FORMAT_TAG)
+		_tag.parents = tag.parents.map(tag => {
+			return format.copy(tag, FORMAT_TAG)
+		})
+		_tag.children = children.map(tag => {
+			return format.copy(tag, FORMAT_TAG)
+		})
 
 		handler(ctx, 200, _tag)
 	} catch (e) {
+		console.log(e)
 		handler(ctx, 50000)
 	}
 }
@@ -99,18 +85,10 @@ const getList = async (ctx, next) => {
 	let params = ctx.request.query
 
 	try {
-		let tags = await Tag.find({}, 'name level').or([
-				{
-					'level': {$lt: params.level + 1},
-					'parents': {$in: params.ids.split(',')}
-				},
-				{
-					'root': true
-				}
-			]).exec()
+		let tags = await Tag.find({'level': {$eq: params.level}}, 'name level').exec()
 
 		let _tags = tags.map(tag => {
-			return { id: tag._id, name: tag.name, level: tag.level }
+			return format.copy(tag, FORMAT_TAG)
 		})
 
 		handler(ctx, 200, _tags)

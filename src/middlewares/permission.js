@@ -1,15 +1,15 @@
 const ALLOW_PATH = {
 	'/account/register': ['POST'],
 	'/account/login': ['POST'],
-	'/doc/': ['GET'],
-	'/tag/': ['GET'],
+	'/doc': ['GET'],
+	'/tag': ['GET'],
 	'/search/docs': ['GET'],
 	'/search/tags': ['GET']
 }
 
 const NEED_EDITOR_PATH = {
-	'/tag/': ['POST'],
-	'/doc/': ['POST', 'PUT']
+	'/tag': ['POST'],
+	'/doc': ['POST', 'PUT']
 }
 
 export default {

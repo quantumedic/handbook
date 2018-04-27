@@ -3,10 +3,8 @@ import {autoIncrement} from 'mongoose-plugin-autoinc'
 
 const TagSchema = new mongoose.Schema({
 	name: { type: String, required: true },
-	root: { type: Boolean, default: false },
 	description: { type: String, default: true },
 	parents: [ {type: Number, ref: 'Tag'} ],
-	children: [ {type: Number, ref: 'Tag'} ],
 	level: Number,
 	create_time: Date,
 	update_time: Date,

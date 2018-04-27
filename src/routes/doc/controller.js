@@ -3,11 +3,12 @@ import {handler} from '../../middlewares/handler'
 import format from '../../middlewares/format'
 
 const formatAuthor = author => {
+	console.log(author)
 	return { id: author._id, username: author.username }
 }
 
 const mapDoc = async doc => {
-	let _doc = await doc.populate({path: 'tags', select: '_id name level'})
+	let _doc = await doc.populate({path: 'tags', select: 'name level'})
 		.populate({path: 'author', select: 'username'})
 		.populate({path: 'editors', select: 'username'})
 		.populate({path: 'last_update_author', select: 'username'})
@@ -43,12 +44,14 @@ const create = async (ctx, next) => {
 		doc.draft_time = time
 		doc.author = ctx.state.user.uid
 		doc.editors = [ctx.state.user.uid]
+		doc.last_update_author = doc.author
 		doc.tags = [params.tag_id]
 
 		let _doc = await doc.save()
 
 		handler(ctx, 200, _doc._id)
 	} catch (e) {
+		console.log(e)
 		handler(ctx, 201)
 	}
 }
@@ -81,7 +84,6 @@ const update = async (ctx, next) => {
 
 		handler(ctx, 200, _doc)
 	} catch (e) {
-		console.log(e)
 		handler(ctx, 201)
 	}
 }

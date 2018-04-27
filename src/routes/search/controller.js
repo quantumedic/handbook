@@ -26,7 +26,7 @@ const search = async (ctx, next) => {
 
 const getTags = async (ctx, next) => {
 	try {
-		let tags = await Tag.find({}, 'name level').exec()
+		let tags = await Tag.find({'level': {$gt: 0}}, 'name level').exec()
 
 		tags = tags.map(tag => {
 			return format.copy(tag, FORMAT_TAG)
