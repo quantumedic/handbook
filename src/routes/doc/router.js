@@ -7,6 +7,10 @@ route.post('/doc', Controller.create)
 
 route.put('/doc', Controller.update)
 
+route.put('/doc/collect', Controller.collect)
+
+route.delete('/doc/collect', Controller.uncollect)
+
 route.get('/doc', Controller.getDetail)
 
 export default route

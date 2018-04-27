@@ -1,5 +1,6 @@
 import {User} from '../../models/user.model'
 import {Tag, FORMAT_TAG} from '../../models/tag.model'
+import {Doc, FORMAT_LIST_DOC} from '../../models/doc.model'
 import {handler} from '../../middlewares/handler'
 import format from '../../middlewares/format'
 
@@ -98,9 +99,42 @@ const getList = async (ctx, next) => {
 	}
 }
 
+
+const searchDocsByTag = async (ctx, next) => {
+	let id = ctx.request.query.id
+
+	try {
+		let children = await Tag.find({'parents': {$in: [id]}}).exec()
+
+		let _tags = children.map(tag => {
+			return tag._id
+		})
+		_tags.push(id)
+
+		let docs = await Doc.find({'tags': {$in: _tags}})
+			.where('status').equals(1)
+			.populate({path: 'tags', select: 'name level'})
+			.exec()
+
+		docs = docs.map(doc => {
+			let _doc = format.copy(doc, FORMAT_LIST_DOC, true)
+			_doc.tags = _doc.tags.map(tag => {
+				return format.copy(tag, FORMAT_TAG)
+			})
+			return _doc
+		})
+
+		handler(ctx, 200, docs)
+	} catch (e) {
+		console.log(e)
+		handler(ctx, 40003)
+	}
+}
+
 export default {
 	create,
 	favor,
 	getInfo,
-	getList
+	getList,
+	searchDocsByTag
 }

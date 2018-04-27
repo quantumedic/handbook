@@ -11,4 +11,6 @@ route.get('/tag', Controller.getInfo)
 
 route.get('/tag/list', Controller.getList)
 
+route.get('/tag/docs', Controller.searchDocsByTag)
+
 export default route

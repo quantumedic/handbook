@@ -1,4 +1,5 @@
-import {Doc, FORMAT_DOC} from '../../models/doc.model'
+import {Doc, FORMAT_DOC, FORMAT_LIST_DOC} from '../../models/doc.model'
+import {User} from '../../models/user.model'
 import {handler} from '../../middlewares/handler'
 import format from '../../middlewares/format'
 
@@ -23,7 +24,7 @@ const mapDoc = async doc => {
 				return formatAuthor(editor)
 			})
 			_doc.tags = _doc.tags.map(tag => {
-				return { id: tag._id, name: tag.name }
+				return { id: tag._id, name: tag.name, level: tag.level }
 			})
 			resolve(_doc)
 		} catch (e) {
@@ -70,6 +71,7 @@ const update = async (ctx, next) => {
 		doc.reference = params.reference
 		doc.draft = params.content
 		doc.draft_time = time
+		doc.tags = params.tags.split(',')
 		
 		if (doc.editors.indexOf(uid) < 0) doc.editors.push(uid)
 		if (params.publish) {
@@ -88,6 +90,53 @@ const update = async (ctx, next) => {
 	}
 }
 
+const collect = async (ctx, next) => {
+	let id = ctx.request.body.id
+
+	try {
+		let doc = await Doc.findById(id).exec()
+		let user = await User.findById(ctx.state.user.uid).exec()
+
+		if (user.collections.indexOf(doc._id) >= 0) {
+			handler(ctx, 40004)
+		} else {
+			doc.collect_count++
+			user.collections.push(doc._id)
+			await doc.save()
+			await user.save()
+
+			handler(ctx, 200, true)
+		}
+	} catch (e) {
+		console.log(e)
+		handler(ctx, 201)
+	}
+}
+
+const uncollect = async (ctx, next) => {
+	let id = ctx.request.query.id
+	console.log(id)
+
+	try {
+		let doc = await Doc.findById(id).exec()
+		let user = await User.findById(ctx.state.user.uid).exec()
+
+		if (user.collections.indexOf(doc._id) < 0) {
+			handler(ctx, 40004)
+		} else {
+			doc.collect_count--
+			user.collections.splice(user.collections.indexOf(doc._id), 1)
+			await doc.save()
+			await user.save()
+
+			handler(ctx, 200, true)
+		}
+	} catch (e) {
+		console.log(e)
+		handler(ctx, 201)
+	}
+}
+
 const getDetail = async (ctx, next) => {
 	let id = ctx.request.query.id
 	let draft = ctx.request.query.draft
@@ -95,6 +144,13 @@ const getDetail = async (ctx, next) => {
 	try {
 		let doc = await Doc.findByIdAndUpdate(id, {$inc: {view_count: 1}}).exec()
 		let _doc = await mapDoc(doc)
+
+		if (ctx.state.user.uid) {
+			let user = await User.findById(ctx.state.user.uid).exec()
+			_doc.collected = user.collections.indexOf(_doc.id) >= 0
+		} else {
+			_doc.collected = false
+		}
 
 		if (!draft) delete _doc.draft
 
@@ -108,5 +164,7 @@ const getDetail = async (ctx, next) => {
 export default {
 	create,
 	update,
-	getDetail
+	getDetail,
+	collect,
+	uncollect
 }

@@ -45,4 +45,4 @@ export const FORMAT_DOC = [
 	'last_update_author'
 ]
 
-export const FORMAT_LIST_DOC = ['title', 'abstract', 'title', 'abstract', 'tags', 'update_time']
+export const FORMAT_LIST_DOC = ['title', 'abstract', 'title', 'abstract', 'tags', 'status', 'update_time']
