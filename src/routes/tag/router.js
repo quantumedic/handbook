@@ -7,6 +7,8 @@ route.post('/tag', Controller.create)
 
 route.put('/tag/favor', Controller.favor)
 
+route.delete('/tag/favor', Controller.unfavor)
+
 route.get('/tag', Controller.getInfo)
 
 route.get('/tag/list', Controller.getList)

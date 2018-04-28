@@ -54,6 +54,13 @@ const getInfo = async (ctx, next) => {
 			return format.copy(tag, FORMAT_TAG)
 		})
 
+		if (ctx.state.user.uid) {
+			let user = await User.findById(ctx.state.user.uid).exec()
+			_tag.favored = user.favor_tags.indexOf(_tag.id) >= 0
+		} else {
+			_tag.favored = false
+		}
+
 		handler(ctx, 200, _tag)
 	} catch (e) {
 		console.log(e)
@@ -78,6 +85,28 @@ const favor = async (ctx, next) => {
 			handler(ctx, 50003)
 		}
 	} catch (e) {
+		handler(ctx, 50000)
+	}
+}
+
+const unfavor = async (ctx, next) => {
+	let params = ctx.request.query
+
+	try {
+		let user = await User.findById(ctx.state.user.uid).exec()
+
+		if (user.favor_tags.indexOf(params.id) >= 0) {
+			let tag = await Tag.findByIdAndUpdate(params.id, {$inc: {favor_count: -1}}).exec()
+
+			user.favor_tags.splice(user.favor_tags.indexOf(tag._id), 1)
+			await user.save()
+
+			handler(ctx, 200, true)
+		} else {
+			handler(ctx, 50003)
+		}
+	} catch (e) {
+		console.log(e)
 		handler(ctx, 50000)
 	}
 }
@@ -134,6 +163,7 @@ const searchDocsByTag = async (ctx, next) => {
 export default {
 	create,
 	favor,
+	unfavor,
 	getInfo,
 	getList,
 	searchDocsByTag
