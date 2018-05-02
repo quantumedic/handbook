@@ -44,7 +44,7 @@ const authenticate = async (ctx, next) => {
 		}
 	} catch (e) {
 		console.log(e)
-		handler(ctx, 404)
+		handler(ctx, 204)
 	}
 }
 
