@@ -43,12 +43,13 @@ const getTags = async (ctx, next) => {
 	try {
 		let tags = await Tag.find({'level': {$gt: 0}}, 'name level').exec()
 
-		_tags = tags.map(tag => {
+		let _tags = tags.map(tag => {
 			return format.copy(tag, FORMAT_TAG)
 		})
 
 		handler(ctx, 200, _tags)
 	} catch (e) {
+		console.log(e)
 		handler(ctx, 50002)
 	}
 }
