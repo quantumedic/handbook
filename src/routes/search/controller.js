@@ -15,13 +15,25 @@ const formatDoc = docs => {
 }
 
 const search = async (ctx, next) => {
+	let keyword = ctx.request.query.keyword
+	let word_reg = new RegExp(keyword)
+
 	try {
-		let docs = await Doc.find({}, 'title abstract tags update_time')
+		let docs = await Doc.find({'title': {$regex: word_reg}}, 'title abstract tags update_time')
 			.where('status').equals(1)
 			.populate({path: 'tags', select: 'name level'})
 			.exec()
 
-		handler(ctx, 200, formatDoc(docs))
+		let tags = keyword
+			? await Tag.find({'name': {$regex: word_reg}}, 'name level description').exec()
+			: []
+		
+		let _docs = formatDoc(docs)
+		let _tags = tags.map(tag => {
+			return {id: tag._id, level: tag.level, name: tag.name, description: tag.description}
+		})
+
+		handler(ctx, 200, {docs: _docs, tags: _tags})
 	} catch (e) {
 		handler(ctx, 40003)
 	}
@@ -31,11 +43,11 @@ const getTags = async (ctx, next) => {
 	try {
 		let tags = await Tag.find({'level': {$gt: 0}}, 'name level').exec()
 
-		tags = tags.map(tag => {
+		_tags = tags.map(tag => {
 			return format.copy(tag, FORMAT_TAG)
 		})
 
-		handler(ctx, 200, tags)
+		handler(ctx, 200, _tags)
 	} catch (e) {
 		handler(ctx, 50002)
 	}
