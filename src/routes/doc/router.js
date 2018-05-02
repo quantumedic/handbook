@@ -7,6 +7,8 @@ route.post('/doc', Controller.create)
 
 route.put('/doc', Controller.update)
 
+route.delete('/doc', Controller.remove)
+
 route.put('/doc/collect', Controller.collect)
 
 route.delete('/doc/collect', Controller.uncollect)

@@ -35,6 +35,23 @@ const create = async (ctx, next) => {
 	}
 }
 
+const update = async (ctx, next) => {
+	let params = ctx.request.body
+
+	try {
+		let tag = await Tag.findById(params.id).exec()
+
+		tag.name = params.name
+		tag.description = params.description
+		tag.parents = params.ids.split(',')
+		let _tag = await tag.save()
+
+		handler(ctx, 200, format.copy(_tag, FORMAT_TAG))
+	} catch (e) {
+		handler(ctx, 201)
+	}
+}
+
 const getInfo = async (ctx, next) => {
 	let id = ctx.request.query.id
 	let tree = ctx.request.query.tree
@@ -162,6 +179,7 @@ const searchDocsByTag = async (ctx, next) => {
 
 export default {
 	create,
+	update,
 	favor,
 	unfavor,
 	getInfo,

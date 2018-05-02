@@ -161,10 +161,26 @@ const getDetail = async (ctx, next) => {
 	}
 }
 
+const remove = async (ctx, next) => {
+	let id = ctx.request.query.id
+
+	try {
+		let doc = await Doc.findById(id).exec()
+
+		doc.status = 2
+		let _doc = await doc.save()
+
+		handler(ctx, 200, true)
+	} catch (e) {
+		handler(ctx, 40000)
+	}
+}
+
 export default {
 	create,
 	update,
 	getDetail,
 	collect,
-	uncollect
+	uncollect,
+	remove
 }

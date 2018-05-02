@@ -9,8 +9,8 @@ const ALLOW_PATH = {
 }
 
 const NEED_EDITOR_PATH = {
-	'/tag': ['POST'],
-	'/doc': ['POST', 'PUT'],
+	'/tag': ['POST', 'PUT'],
+	'/doc': ['POST', 'PUT', 'DELETE'],
 	'/search/contributions': ['GET']
 }
 

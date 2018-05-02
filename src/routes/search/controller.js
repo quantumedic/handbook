@@ -43,7 +43,7 @@ const getTags = async (ctx, next) => {
 
 const getContributions = async (ctx, next) => {
 	try {
-		let docs = await Doc.find({'editors': {$in: [ctx.state.user.uid]}})
+		let docs = await Doc.find({'editors': {$in: [ctx.state.user.uid]}, 'status': {$ne: 2}})
 			.populate({path: 'tags', select: 'name level'})
 			.exec()
 
@@ -60,6 +60,7 @@ const getCollections = async (ctx, next) => {
 				path: 'tags',
 				select: 'name level'
 			}})
+			.where('status').equals(1)
 			.exec()
 
 		let docs = formatDoc(user.collections)
