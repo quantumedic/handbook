@@ -43,11 +43,27 @@ const login = async (ctx, next) => {
 	try {
 		let user = await User.findOne({email: params.email}).exec()
 
-		user.password === md5(params.email + params.password)
-			? handler(ctx, 200, auth.generate(user))
-			: handler(ctx, 3002)
+		if (user.password === md5(params.email + params.password)) {
+			let result = await auth.generate(user)
+			handler(ctx, 200, result)
+		} else {
+			handler(ctx, 3002)
+		}
 	} catch (e) {
+		console.log(e)
 		handler(ctx, 30000)
+	}
+}
+
+const logout = async (ctx, next) => {
+	try {
+		let user = await User.findById(ctx.state.user.uid).exec()
+
+		user.tokens.splice(user.tokens.indexOf(ctx.state.user.token), 1)
+		await user.save()
+		handler(ctx, 200, true)
+	} catch (e) {
+		handler(ctx, 205)
 	}
 }
 
@@ -74,5 +90,6 @@ export default {
 	register,
 	getInfo,
 	login,
+	logout,
 	modify
 }

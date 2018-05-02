@@ -7,6 +7,8 @@ route.post('/account/register', Controller.register)
 
 route.post('/account/login', Controller.login)
 
+route.post('/account/logout', Controller.logout)
+
 route.get('/account/info', Controller.getInfo)
 
 route.put('/account/info', Controller.modify)

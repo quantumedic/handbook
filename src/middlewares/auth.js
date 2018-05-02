@@ -4,7 +4,8 @@ import permission from './permission'
 import md5 from 'md5'
 
 const equal = (token, account) => {
-	return token === md5(account._id + account.password + account.last_login_time.toLocaleString())
+	console.info(token, account)
+	return account.tokens.indexOf(token) >= 0
 }
 
 const parse = auth => {
@@ -47,14 +48,29 @@ const authenticate = async (ctx, next) => {
 	}
 }
 
-const generate = user => {
-	let time = new Date().toLocaleString()
-	user.last_login_time = time
-	user.save()
-	return {
-		uid: user._id,
-		token: md5(user._id + user.password + time.toLocaleString())
-	}
+const generate = async user => {
+	return new Promise((resolve, reject) => {
+		try {
+			let time = new Date().toLocaleString()
+			let token = md5(user._id + user.password + time.toLocaleString())
+			user.last_login_time = time
+
+			user.tokens
+				? user.tokens.push(token)
+				: user.tokens = [token]
+
+			user.save().then(res => {
+				resolve({
+					uid: user._id,
+					token: token
+				})
+			}, err => {
+				reject(err)
+			})
+		} catch (e) {
+			reject(e)
+		}
+	})
 }
 
 export default {

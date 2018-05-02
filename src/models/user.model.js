@@ -17,6 +17,7 @@ export const User = mongoose.model('User', new Schema({
 	documents: [ {type: Number, ref: 'Doc'} ],
 	favor_tags: [ {type: Number, ref: 'Tag'} ],
 	collections: [ {type: Number, ref: 'Doc'} ],
+	tokens: [ {type: String} ],
 	create_time: Date,
 	last_login_time: Date
 }, {collection: 'users'}))
