@@ -56,11 +56,17 @@ const getContributions = async (ctx, next) => {
 const getCollections = async (ctx, next) => {
 	try {
 		let user = await User.findById(ctx.state.user.uid)
-			.populate({path: 'collections', select: 'title abstract tags update_time', populate: {
-				path: 'tags',
-				select: 'name level'
-			}})
-			.where('status').equals(1)
+			.populate({
+				path: 'collections',
+				select: 'title abstract tags update_time',
+				populate: {
+					path: 'tags',
+					select: 'name level'
+				},
+				match: {
+					'status': {$eq: 1}
+				}
+			})
 			.exec()
 
 		let docs = formatDoc(user.collections)

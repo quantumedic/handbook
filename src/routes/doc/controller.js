@@ -143,18 +143,22 @@ const getDetail = async (ctx, next) => {
 
 	try {
 		let doc = await Doc.findByIdAndUpdate(id, {$inc: {view_count: 1}}).exec()
-		let _doc = await mapDoc(doc)
 
-		if (ctx.state.user.uid) {
-			let user = await User.findById(ctx.state.user.uid).exec()
-			_doc.collected = user.collections.indexOf(_doc.id) >= 0
+		if (doc.status === 2) {
+			handler(ctx, 40000)
 		} else {
-			_doc.collected = false
+			let _doc = await mapDoc(doc)
+
+			if (ctx.state.user.uid) {
+				let user = await User.findById(ctx.state.user.uid).exec()
+				_doc.collected = user.collections.indexOf(_doc.id) >= 0
+			} else {
+				_doc.collected = false
+			}
+
+			if (!draft) delete _doc.draft
+			handler(ctx, 200, _doc)
 		}
-
-		if (!draft) delete _doc.draft
-
-		handler(ctx, 200, _doc)
 	} catch (e) {
 		console.log(e)
 		handler(ctx, 40000)
