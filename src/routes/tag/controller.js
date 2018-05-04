@@ -43,11 +43,15 @@ const update = async (ctx, next) => {
 
 		tag.name = params.name
 		tag.description = params.description
-		tag.parents = params.ids.split(',')
-		let _tag = await tag.save()
-
-		handler(ctx, 200, format.copy(_tag, FORMAT_TAG))
+		tag.parents = params.parents.split(',')
+		if (params.parents === '') {
+			handler(ctx, 50004)
+		} else {
+			let _tag = await tag.save()
+			handler(ctx, 200, format.copy(_tag, FORMAT_TAG))
+		}
 	} catch (e) {
+		console.log(e)
 		handler(ctx, 201)
 	}
 }
@@ -132,7 +136,7 @@ const getList = async (ctx, next) => {
 	let params = ctx.request.query
 
 	try {
-		let tags = await Tag.find({'level': {$eq: params.level}}, 'name level').exec()
+		let tags = await Tag.find({'level': {$eq: params.level - 1}}, 'name level').exec()
 
 		let _tags = tags.map(tag => {
 			return format.copy(tag, FORMAT_TAG)

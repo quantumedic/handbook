@@ -5,7 +5,7 @@ let route = router()
 
 route.post('/tag', Controller.create)
 
-route.post('/tag', Controller.update)
+route.put('/tag', Controller.update)
 
 route.put('/tag/favor', Controller.favor)
 
