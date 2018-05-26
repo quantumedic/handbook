@@ -10,4 +10,4 @@ RUN npm install --registry=https://registry.npm.taobao.org
 
 
 EXPOSE 3000
-CMD pm2-runtime start ecosystem.json
+CMD pm2-runtime start ecosystem.json -i max
